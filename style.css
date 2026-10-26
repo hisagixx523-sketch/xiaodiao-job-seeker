@@ -1,0 +1,369 @@
+/* ============================================================
+   【路标 1】Apple 极简浮雕 + 工业毛玻璃设计系统
+   ============================================================ */
+:root {
+  --surface-base: #EAECEF;
+  --surface-glass: rgba(255, 255, 255, 0.76);
+  --surface-dark: #222326;
+
+  /* 核心强调色与等级色 */
+  --accent-orange: #FE5E0E;
+  --accent-yellow: #FAF5B2;
+  --tier-s: #FE5E0E;
+  --tier-a: #D97706;
+  --tier-b: #64748B;
+  --tier-c: #DC2626;
+
+  /* 字体颜色层级（拉大对比，主次分明） */
+  --text-primary: #141416;
+  --text-secondary: #525866;
+  --text-muted: #8A909E;
+
+  /* 新拟态浮雕阴影与内凹槽阴影 */
+  --neu-extruded: 4px 4px 10px rgba(163, 177, 198, 0.35), 
+                  -4px -4px 10px rgba(255, 255, 255, 0.9);
+  --neu-extruded-sm: 2px 2px 5px rgba(163, 177, 198, 0.3), 
+                     -2px -2px 5px rgba(255, 255, 255, 0.85);
+  --neu-inset: inset 2px 2px 5px rgba(163, 177, 198, 0.35), 
+               inset -2px -2px 5px rgba(255, 255, 255, 0.85);
+  --glass-shadow: 0 14px 34px -10px rgba(15, 23, 42, 0.06), 
+                  0 4px 12px -2px rgba(15, 23, 42, 0.03);
+
+  --font-tech: "Inter", -apple-system, "PingFang SC", "Noto Sans SC", "Noto Sans JP", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--surface-base);
+  background-image: radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 0);
+  background-size: 24px 24px;
+  color: var(--text-primary);
+  font-family: var(--font-tech);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ============================================================
+   【路标 2】面板与新拟态浮雕组件
+   ============================================================ */
+/* 外层大面板：通透磨砂玻璃，弱化边框 */
+.card-glass-panel {
+  background: var(--surface-glass);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: var(--glass-shadow);
+  border-radius: 18px;
+}
+
+/* 左侧 Gemini 风格竖排快捷栏 */
+.left-rail-dock {
+  background: rgba(255, 255, 255, 0.68);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: var(--glass-shadow);
+  border-radius: 20px;
+  padding: 10px 6px;
+}
+
+.rail-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 600;
+  transition: all 0.18s ease;
+}
+.rail-btn:hover {
+  background: #FFFFFF;
+  color: var(--text-primary);
+  box-shadow: var(--neu-extruded-sm);
+  transform: translateY(-1px);
+}
+.rail-btn.active {
+  background: #FFFFFF;
+  color: var(--accent-orange);
+  box-shadow: var(--neu-extruded-sm);
+}
+
+/* 企业卡片：微凸浮雕 + 左侧等级色条 */
+.card-glass-interactive {
+  position: relative;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: var(--neu-extruded-sm);
+  border-radius: 14px;
+  transition: all 0.18s ease;
+  overflow: hidden;
+}
+.card-glass-interactive:hover {
+  background: #FFFFFF;
+  transform: translateY(-1px);
+}
+.card-glass-active {
+  background: #FFFFFF !important;
+  box-shadow: 0 8px 20px -4px rgba(254, 94, 14, 0.16), 0 0 0 1.5px var(--accent-orange) !important;
+}
+
+/* 等级分栏左侧指示条 */
+.tier-bar-S { border-left: 4px solid var(--tier-s); }
+.tier-bar-A { border-left: 4px solid var(--tier-a); }
+.tier-bar-B { border-left: 4px solid var(--tier-b); }
+.tier-bar-C { border-left: 4px solid var(--tier-c); }
+
+/* 工业高光橙色面板 */
+.card-industrial-orange {
+  background: linear-gradient(135deg, #FE5E0E 0%, #F04E00 100%);
+  color: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 10px 24px -6px rgba(254, 94, 14, 0.4);
+}
+
+/* 上下保留的核心视觉重心：暗色胶囊控制栏 */
+.toolbar-pill-dark {
+  background-color: var(--surface-dark);
+  color: #ffffff;
+  border-radius: 9999px;
+  padding: 5px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* ============================================================
+   【路标 3】多样化按钮形态（胶囊形、圆形浮雕、微凹切换器）
+   ============================================================ */
+/* 主操作：饱满胶囊按钮 */
+.btn-pill-primary {
+  background: var(--accent-orange);
+  color: #FFFFFF;
+  border-radius: 9999px;
+  padding: 9px 20px;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 6px 16px -3px rgba(254, 94, 14, 0.45);
+  transition: all 0.16s ease;
+}
+.btn-pill-primary:hover {
+  background: #e24e04;
+  transform: translateY(-1px);
+}
+.btn-pill-primary:active {
+  transform: translateY(0);
+}
+
+/* 次要操作：新拟态浮雕胶囊按钮 */
+.btn-neu-pill {
+  background: #F4F6F9;
+  color: var(--text-primary);
+  border-radius: 9999px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: var(--neu-extruded-sm);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  transition: all 0.15s ease;
+}
+.btn-neu-pill:hover {
+  background: #FFFFFF;
+  color: var(--accent-orange);
+}
+.btn-neu-pill:active {
+  box-shadow: var(--neu-inset);
+}
+
+/* 圆形微浮雕图标按钮（用于删除、归档等精细操作） */
+.btn-circle-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 9999px;
+  background: #F4F6F9;
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--neu-extruded-sm);
+  border: 1px solid #FFFFFF;
+  transition: all 0.15s ease;
+}
+.btn-circle-icon:hover {
+  background: #FFFFFF;
+  color: var(--accent-orange);
+  transform: scale(1.06);
+}
+
+/* 内凹式分段胶囊切换器 (Segmented Control) */
+.segmented-groove {
+  background: #DFE3E8;
+  box-shadow: var(--neu-inset);
+  border-radius: 9999px;
+  padding: 3px;
+  display: inline-flex;
+  align-items: center;
+}
+.segmented-item {
+  border-radius: 9999px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  transition: all 0.15s ease;
+}
+.segmented-item.active {
+  background: #FFFFFF;
+  color: var(--text-primary);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* 测绘淡黄胶囊标签 */
+.badge-survey-yellow {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  background-color: var(--accent-yellow);
+  color: #1a1a1a;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* ============================================================
+   【路标 4】新拟态内凹软槽输入框 & 视觉字体层级
+   ============================================================ */
+.input-industrial {
+  background: #EDF0F4;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: var(--neu-inset);
+  border-radius: 10px;
+  color: var(--text-primary);
+  transition: all 0.18s ease;
+}
+.input-industrial:focus {
+  background: #FFFFFF;
+  box-shadow: 0 0 0 2.5px rgba(254, 94, 14, 0.22);
+  border-color: var(--accent-orange);
+  outline: none;
+}
+
+.typo-hero-title {
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--text-primary);
+}
+
+.typo-metric-value {
+  font-variant-numeric: tabular-nums;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.typo-tech-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+/* 极简日历网格 */
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  text-align: center;
+}
+.cal-cell {
+  height: 26px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  color: var(--text-secondary);
+}
+.cal-cell.today {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--text-primary);
+  font-weight: 800;
+}
+.cal-cell.has-event {
+  background: #FFF3EC;
+  color: var(--accent-orange);
+  font-weight: 800;
+  cursor: pointer;
+}
+.cal-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--accent-orange);
+  position: absolute;
+  bottom: 2px;
+}
+
+/* ============================================================
+   【路标 5】骨架屏与新手引导聚光灯
+   ============================================================ */
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+}
+.skeleton-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.65) 50%, transparent 100%);
+  animation: shimmerWave 1.25s infinite;
+}
+@keyframes shimmerWave {
+  100% { transform: translateX(100%); }
+}
+
+#tour-spotlight-ring {
+  position: fixed;
+  z-index: 9990;
+  pointer-events: none;
+  border: 2.5px solid var(--accent-orange);
+  border-radius: 16px;
+  box-shadow: 0 0 0 9999px rgba(20, 20, 22, 0.42), 0 0 24px rgba(254, 94, 14, 0.6);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.16);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-orange);
+}

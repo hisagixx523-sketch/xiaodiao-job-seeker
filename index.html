@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>就活作战室 — 企業分析・経験管理・ES添削</title>
+  
+  <!-- 外部基础依赖（排版库与字体） -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&family=Noto+Sans+JP:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- 引入我们拆出来的独立 CSS 文件 -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="min-h-screen flex flex-col pb-16 selection:bg-[#FE5E0E] selection:text-white">
+
+  <!-- ============================================================
+       【路标 1】顶部导航与保留的黑色胶囊重心
+       ============================================================ -->
+  <header class="sticky top-0 z-30 bg-[#EAECEF]/80 backdrop-blur-md border-b border-white/60 px-4 py-2">
+    <div class="max-w-[1640px] mx-auto flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- 左侧：精简品牌与自动保存状态 -->
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl bg-[#FE5E0E] text-white flex items-center justify-center font-mono font-extrabold text-xs shadow-sm">
+          26
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold text-sm tracking-tight text-neutral-900" data-i18n="appTitle">就活作战室</span>
+            <span id="autosave-indicator" class="text-[11px] font-semibold text-emerald-700 bg-emerald-50/90 px-2 py-0.5 rounded-full border border-emerald-200/60 transition-opacity duration-300">
+              ✓ 已自动保存
+            </span>
+          </div>
+          <p class="text-[11px] font-medium text-neutral-500 leading-none mt-0.5" data-i18n="appSubtitle">
+            企业排雷 · 证据链ES
+          </p>
+        </div>
+      </div>
+
+      <!-- 视觉重心 1：顶部暗色胶囊主导航（严格保留） -->
+      <nav id="tour-target-nav" class="toolbar-pill-dark text-xs">
+        <button onclick="switchTab('companies')" id="tab-btn-companies" class="px-3.5 py-1.5 rounded-full font-bold transition flex items-center gap-1.5 bg-[#FE5E0E] text-white">
+          <span class="font-mono text-[11px] opacity-90 tabular-nums">01</span>
+          <span data-i18n="navCompanies">企业排雷</span>
+        </button>
+        <div class="w-px h-3 bg-white/15"></div>
+        <button onclick="switchTab('stories')" id="tab-btn-stories" class="px-3.5 py-1.5 rounded-full font-bold transition flex items-center gap-1.5 text-white/75 hover:text-white">
+          <span class="font-mono text-[11px] opacity-75 tabular-nums">02</span>
+          <span data-i18n="navStories">经历资产</span>
+        </button>
+        <div class="w-px h-3 bg-white/15"></div>
+        <button onclick="switchTab('es')" id="tab-btn-es" class="px-3.5 py-1.5 rounded-full font-bold transition flex items-center gap-1.5 text-white/75 hover:text-white">
+          <span class="font-mono text-[11px] opacity-75 tabular-nums">03</span>
+          <span data-i18n="navES">ES 审计</span>
+        </button>
+      </nav>
+
+      <!-- 右侧：极简状态与语言胶囊 -->
+      <div class="flex items-center gap-2">
+        <button id="tour-target-aimode" onclick="openModal('settingsModal')" class="badge-survey-yellow hover:brightness-95 transition py-1 px-3 cursor-pointer">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#FE5E0E]" id="ai-status-dot"></span>
+          <span id="ai-mode-label" class="font-bold text-[11px]">网页桥接</span>
+        </button>
+
+        <div class="segmented-groove">
+          <button onclick="setLanguage('zh')" id="lang-zh" class="segmented-item active">中文</button>
+          <button onclick="setLanguage('ja')" id="lang-ja" class="segmented-item">日本語</button>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ============================================================
+       【主工作区】：左侧 Gemini 风格竖排快捷栏 + 右侧 12 列主黑板
+       ============================================================ -->
+  <div class="flex-1 max-w-[1640px] w-full mx-auto px-3.5 pt-3 flex gap-3.5 items-start">
+
+    <!-- 【新增】左侧竖排快捷工具栏 (Gemini Workspace 风格：SVG图标 + 2字标签) -->
+    <aside class="hidden md:flex flex-col items-center gap-2 sticky top-16 left-rail-dock shrink-0">
+      <button onclick="quickCreateByActiveTab()" class="rail-btn" title="新建当前项">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+        <span data-i18n="railNew">新建</span>
+      </button>
+
+      <button onclick="toggleArchivePoolFromRail()" id="rail-btn-pool" class="rail-btn" title="切换待放区">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+        <span data-i18n="railPool">待放区</span>
+      </button>
+
+      <button onclick="fillSampleCompanyData()" class="rail-btn" title="填入示例数据">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        <span data-i18n="railSample">示例</span>
+      </button>
+
+      <div class="w-6 h-px bg-black/10 my-0.5"></div>
+
+      <button onclick="startInteractiveTour()" class="rail-btn" title="使用教程">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 8h.01M11 12h1v4h1"/></svg>
+        <span data-i18n="railTour">教程</span>
+      </button>
+
+      <button onclick="exportAllDataJSON()" class="rail-btn" title="导出备份">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
+        <span data-i18n="railBackup">备份</span>
+      </button>
+
+      <button onclick="openModal('settingsModal')" class="rail-btn" title="系统设定">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        <span data-i18n="btnSettingsShort">设定</span>
+      </button>
+    </aside>
+
+    <!-- 主黑板内容区 -->
+    <main class="flex-1 min-w-0">
+
+      <!-- ============================================================
+           【路标 2】模块一：企业排雷 (左栏列表+待放区+极简日历 | 中栏录入 | 右栏结果)
+           ============================================================ -->
+      <section id="view-companies" class="grid grid-cols-12 gap-3.5 items-start">
+        
+        <!-- 2.1 左栏 (3列)：精简概览 + 企业列表(含待放区切换) + 极简日历 -->
+        <div id="tour-target-pipeline" class="col-span-12 lg:col-span-3 flex flex-col gap-3">
+          
+          <!-- 极简三合一指标条（压缩高度，留空间给日历） -->
+          <div class="card-glass-panel px-4 py-3 flex items-center justify-between">
+            <div>
+              <span class="typo-tech-label block" data-i18n="colCompanyListLabel">数据概览</span>
+              <span class="text-sm font-extrabold text-neutral-900" data-i18n="pipelineHeroTitle">求职进度</span>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="text-center">
+                <span class="typo-tech-label block" data-i18n="metricTargets">进行中</span>
+                <span id="metric-total-comp" class="typo-metric-value text-neutral-900">01</span>
+              </div>
+              <div class="text-center">
+                <span class="typo-tech-label block" data-i18n="metricKey">重点</span>
+                <span id="metric-sa-comp" class="typo-metric-value text-[#FE5E0E]">01</span>
+              </div>
+              <div class="text-center">
+                <span class="typo-tech-label block" data-i18n="metricRisks">疑点</span>
+                <span id="metric-red-flags" class="typo-metric-value text-neutral-900">02</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 企业列表 + 待放区切换 (方案 A) -->
+          <div class="card-glass-panel p-3 flex flex-col gap-2.5">
+            <div class="flex items-center justify-between">
+              <!-- 进行中 / 待放区 胶囊切换器 -->
+              <div class="segmented-groove">
+                <button onclick="setCompanyPoolMode('active')" id="pool-btn-active" class="segmented-item active">
+                  <span data-i18n="poolActive">进行中</span> <span id="count-pool-active" class="font-mono ml-0.5">1</span>
+                </button>
+                <button onclick="setCompanyPoolMode('archived')" id="pool-btn-archived" class="segmented-item">
+                  <span data-i18n="poolArchived">待放区</span> <span id="count-pool-archived" class="font-mono ml-0.5">0</span>
+                </button>
+              </div>
+
+              <button onclick="createNewCompany()" class="btn-neu-pill py-1 px-3 text-xs">
+                + <span data-i18n="btnNew">新建</span>
+              </button>
+            </div>
+
+            <div class="flex gap-1.5">
+              <input id="company-search" oninput="renderCompanyList()" type="text" class="input-industrial w-full px-3 py-1.5 text-xs font-medium" data-i18n-placeholder="searchCompanyPlaceholder" placeholder="搜索企业 / 岗位..." />
+              <select id="company-tier-filter" onchange="renderCompanyList()" class="input-industrial px-2 py-1.5 text-xs font-bold">
+                <option value="ALL" data-i18n="filterAll">全部</option>
+                <option value="S">S级</option>
+                <option value="A">A级</option>
+                <option value="B">B级</option>
+                <option value="C">C级</option>
+              </select>
+            </div>
+
+            <!-- 企业卡片容器（支持悬浮移入待放区 & 快速删除） -->
+            <div id="company-list-container" class="flex flex-col gap-2 max-h-[250px] overflow-y-auto pr-0.5"></div>
+          </div>
+
+          <!-- 【新增】左栏下方：极简联动日历（自动读取企业截止日） -->
+          <div class="card-glass-panel p-3.5 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-extrabold text-neutral-900" data-i18n="calTitle">近期日程</span>
+              <div class="flex items-center gap-1">
+                <button onclick="changeCalendarMonth(-1)" class="btn-circle-icon w-5 h-5 text-[10px]">‹</button>
+                <span id="cal-month-label" class="text-xs font-mono font-bold text-neutral-800 px-1 tabular-nums">2026.10</span>
+                <button onclick="changeCalendarMonth(1)" class="btn-circle-icon w-5 h-5 text-[10px]">›</button>
+              </div>
+            </div>
+
+            <!-- 星期表头 -->
+            <div class="cal-grid text-[10px] font-bold text-neutral-400">
+              <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+            </div>
+            <!-- 日期网格 -->
+            <div id="cal-days-grid" class="cal-grid"></div>
+
+            <!-- 近期 2 条关键死线提示 -->
+            <div id="cal-upcoming-list" class="border-t border-black/5 pt-2 flex flex-col gap-1"></div>
+          </div>
+
+        </div>
+
+        <!-- 2.2 中栏 (4列)：资料录入区（含联动日历的截止日选择器） -->
+        <div id="tour-target-source" class="col-span-12 lg:col-span-4 card-glass-panel p-4 flex flex-col gap-3">
+          <div class="flex items-center justify-between border-b border-black/5 pb-2.5">
+            <div>
+              <span class="typo-tech-label" data-i18n="colSourceLabel">资料录入</span>
+              <h2 class="text-sm font-extrabold text-neutral-900 mt-0.5" data-i18n="colSourceTitle">企业信息与招聘原文</h2>
+            </div>
+            <button onclick="fillSampleCompanyData()" class="btn-neu-pill py-1 px-3 text-xs" data-i18n="btnLoadSampleCompany">
+              填入示例
+            </button>
+          </div>
+
+          <div class="grid grid-cols-12 gap-2.5">
+            <div class="col-span-7">
+              <label class="block text-[11px] font-bold text-neutral-700 mb-1" data-i18n="lblCompanyName">企业名称</label>
+              <input id="comp-name" oninput="saveCurrentCompanyMeta()" type="text" class="input-industrial w-full px-3 py-1.5 text-xs font-bold" placeholder="株式会社〇〇" />
+            </div>
+            <div class="col-span-5">
+              <label class="block text-[11px] font-bold text-neutral-700 mb-1" data-i18n="lblFitTier">意向等级</label>
+              <select id="comp-tier" onchange="saveCurrentCompanyMeta()" class="input-industrial w-full px-2.5 py-1.5 text-xs font-bold">
+                <option value="S">S级（首选）</option>
+                <option value="A">A级（重点）</option>
+                <option value="B">B级（备选）</option>
+                <option value="C">C级（避坑）</option>
+              </select>
+            </div>
+            <div class="col-span-5">
+              <label class="block text-[11px] font-bold text-neutral-700 mb-1" data-i18n="lblTargetRole">目标岗位</label>
+              <input id="comp-role" oninput="saveCurrentCompanyMeta()" type="text" class="input-industrial w-full px-3 py-1.5 text-xs font-semibold" placeholder="DX企画 / SaaS企画" />
+            </div>
+            <div class="col-span-3">
+              <label class="block text-[11px] font-bold text-neutral-700 mb-1" data-i18n="lblStageShort">当前进度</label>
+              <input id="comp-status" oninput="saveCurrentCompanyMeta()" type="text" class="input-industrial w-full px-2.5 py-1.5 text-xs font-semibold" placeholder="説明会済" />
+            </div>
+            <div class="col-span-4">
+              <label class="block text-[11px] font-bold text-[#FE5E0E] mb-1" data-i18n="lblDeadlineDate">关键日期 (联动日历)</label>
+              <input id="comp-deadline" onchange="saveCurrentCompanyMeta()" type="date" class="input-industrial w-full px-2 py-1.5 text-xs font-mono font-bold" />
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-[11px] font-bold text-neutral-700" data-i18n="lblRawSource">招聘原文与笔记</label>
+              <span id="source-char-count" class="text-[11px] font-mono font-bold text-neutral-400 tabular-nums">0 字</span>
+            </div>
+            <textarea id="comp-raw-text" oninput="saveCurrentCompanyMeta()" rows="9" class="input-industrial w-full p-3 text-xs leading-relaxed font-medium resize-y" data-i18n-placeholder="rawSourcePlaceholder" placeholder="直接粘贴募集要项、官网业务介绍或说明会记录..."></textarea>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold text-neutral-700 mb-1" data-i18n="lblUserFocus">重点核实问题（选填）</label>
+            <input id="comp-focus" oninput="saveCurrentCompanyMeta()" type="text" class="input-industrial w-full px-3 py-1.5 text-xs font-medium" data-i18n-placeholder="userFocusPlaceholder" placeholder="例：区分自社SaaS企划与SES驻场外包；确认新人交付物与远程条件..." />
+          </div>
+
+          <div class="pt-1 flex flex-wrap items-center gap-2.5">
+            <button onclick="runCompanyAnalysis('auto')" class="btn-pill-primary flex-1 flex items-center justify-center">
+              <span data-i18n="btnAnalyzeAuto">AI 深度拆解</span>
+            </button>
+            <button onclick="runCompanyAnalysis('bridge')" class="btn-neu-pill">
+              <span data-i18n="btnAnalyzeBridge">复制提示词</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2.3 右栏 (5列)：分析结果展示区 -->
+        <div id="tour-target-analysis" class="col-span-12 lg:col-span-5 card-glass-panel p-4 flex flex-col gap-3">
+          <div class="flex items-center justify-between border-b border-black/5 pb-2.5">
+            <div>
+              <span class="typo-tech-label" data-i18n="colAnalysisLabel">分析结果</span>
+              <h2 class="text-sm font-extrabold text-neutral-900 mt-0.5" data-i18n="colAnalysisTitle">业务拆解 · 风险提示 · 提问清单</h2>
+            </div>
+            <button onclick="runDemoSimulation('company')" class="btn-neu-pill py-1 px-3 text-xs" data-i18n="btnSimulateAI">
+              预览效果
+            </button>
+          </div>
+
+          <!-- 骨架屏加载动画 -->
+          <div id="company-skeleton" class="hidden flex-col gap-3 py-2">
+            <div class="flex items-center gap-2 text-xs font-bold text-[#FE5E0E]">
+              <span class="inline-block w-2 h-2 rounded-full bg-[#FE5E0E] animate-ping"></span>
+              <span data-i18n="skeletonAnalyzing">正在拆解盈利模式、核对原文依据并排查风险点...</span>
+            </div>
+            <div class="skeleton-shimmer h-20 w-full"></div>
+            <div class="grid grid-cols-2 gap-2.5">
+              <div class="skeleton-shimmer h-28 w-full"></div>
+              <div class="skeleton-shimmer h-28 w-full"></div>
+            </div>
+            <div class="skeleton-shimmer h-32 w-full"></div>
+          </div>
+
+          <div id="company-analysis-result" class="flex flex-col gap-3 max-h-[calc(100vh-190px)] overflow-y-auto pr-1"></div>
+        </div>
+
+      </section>
+
+      <!-- ============================================================
+           【路标 3】模块二：经历资产
+           ============================================================ -->
+      <section id="view-stories" class="hidden grid-cols-12 gap-3.5 items-start">
+        
+        <div class="col-span-12 lg:col-span-4 flex flex-col gap-3">
+          <div class="card-industrial-orange">
+            <div class="text-[11px] text-white/85 font-semibold" data-i18n="storyMetricLabel">核心经历数</div>
+            <div class="text-sm font-bold mt-0.5 mb-3 text-white" data-i18n="storyListTitle">个人经历库</div>
+            <div class="flex items-baseline justify-between">
+              <div>
+                <span id="story-count-big" class="text-3xl font-bold tracking-tight tabular-nums leading-none">02</span>
+                <span class="text-xs ml-1 text-white/85" data-i18n="storyRecommended">/ 建议 3~5 篇</span>
+              </div>
+              <button onclick="insertGuidedStoryTemplate()" class="px-3 py-1 rounded-full bg-white text-neutral-900 text-xs font-bold hover:bg-neutral-100 transition" data-i18n="btnLoadStoryTemplate">
+                + 载入范例
+              </button>
+            </div>
+          </div>
+
+          <div class="card-glass-panel p-3.5 flex flex-col gap-2.5">
+            <div class="flex items-center justify-between">
+              <span class="typo-tech-label" data-i18n="storySubListLabel">经历列表</span>
+              <button onclick="createNewStory()" class="btn-neu-pill py-1 px-3 text-xs">
+                + <span data-i18n="btnNew">新建</span>
+              </button>
+            </div>
+            <p class="text-xs text-neutral-600 font-medium leading-relaxed bg-white/70 p-2.5 rounded-xl" data-i18n="storyGuideBanner">
+              <strong>精简原则：</strong>只需打磨好 <strong>3～5 个包含具体行动与真实数据的核心经历</strong>，写 ES 时按需勾选，杜绝 AI 编造经历。
+            </p>
+            <div id="story-list-container" class="flex flex-col gap-2 max-h-[calc(100vh-340px)] overflow-y-auto pr-0.5"></div>
+          </div>
+        </div>
+
+        <div class="col-span-12 lg:col-span-8 card-glass-panel p-4 flex flex-col gap-3">
+          <div class="flex items-center justify-between border-b border-black/5 pb-2.5">
+            <div>
+              <span class="typo-tech-label" data-i18n="storyEditorLabel">经历详情</span>
+              <h2 class="text-sm font-extrabold text-neutral-900 mt-0.5" data-i18n="storyEditorTitle">经历内容编辑</h2>
+            </div>
+            <button onclick="deleteCurrentStory()" class="btn-neu-pill text-rose-600 py-1 px-3 text-xs" data-i18n="btnDelete">
+              删除此项
+            </button>
+          </div>
+
+          <div class="grid grid-cols-12 gap-3">
+            <div class="col-span-12 md:col-span-8">
+              <label class="block text-xs font-bold text-neutral-800 mb-1" data-i18n="lblStoryTitle">经历名称</label>
+              <input id="story-title" oninput="saveCurrentStory()" type="text" class="input-industrial w-full px-3 py-1.5 text-sm font-bold" />
+            </div>
+            <div class="col-span-12 md:col-span-4">
+              <label class="block text-xs font-bold text-neutral-800 mb-1" data-i18n="lblStoryTags">能力标签</label>
+              <input id="story-tags" oninput="saveCurrentStory()" type="text" class="input-industrial w-full px-3 py-1.5 text-xs font-bold" />
+            </div>
+
+            <div class="col-span-12 md:col-span-6">
+              <label class="block text-xs font-bold text-neutral-800 mb-1" data-i18n="lblStoryS">1. 背景与痛点</label>
+              <textarea id="story-situation" oninput="saveCurrentStory()" rows="4" class="input-industrial w-full p-3 text-xs leading-relaxed font-medium"></textarea>
+            </div>
+
+            <div class="col-span-12 md:col-span-6">
+              <label class="block text-xs font-bold text-neutral-800 mb-1" data-i18n="lblStoryT">2. 目标与个人职责</label>
+              <textarea id="story-task" oninput="saveCurrentStory()" rows="4" class="input-industrial w-full p-3 text-xs leading-relaxed font-medium"></textarea>
+            </div>
+
+            <div class="col-span-12 md:col-span-6">
+              <label class="block text-xs font-bold text-neutral-800 mb-1" data-i18n="lblStoryA">3. 具体行动与方法</label>
+              <textarea id="story-action" oninput="saveCurrentStory()" rows="5" class="input-industrial w-full p-3 text-xs leading-relaxed font-medium"></textarea>
+            </div>
+
+            <div class="col-span-12 md:col-span-6">
+              <label class="block text-xs font-bold text-neutral-800 mb-1" data-i18n="lblStoryR">4. 最终成果与数据</label>
+              <textarea id="story-result" oninput="saveCurrentStory()" rows="5" class="input-industrial w-full p-3 text-xs leading-relaxed font-medium"></textarea>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ============================================================
+           【路标 4】模块三：ES 审计
+           ============================================================ -->
+      <section id="view-es" class="hidden grid-cols-12 gap-3.5 items-start">
+        
+        <div class="col-span-12 lg:col-span-6 flex flex-col gap-3">
+          <div class="card-industrial-orange">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-[11px] text-white/85 font-semibold" data-i18n="esMetricLabel">字数统计</div>
+                <div class="text-xs font-bold text-white mt-0.5" data-i18n="esEditorTitle">ES 实时字数（不含换行）</div>
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="saveESVersionSnapshot()" class="px-3 py-1 rounded-full bg-black/25 hover:bg-black/40 text-white text-xs font-bold transition" data-i18n="btnSaveSnapshot">
+                  保存版本
+                </button>
+                <button onclick="createNewESApplication()" class="px-3 py-1 rounded-full bg-white text-neutral-900 text-xs font-bold hover:bg-neutral-100 transition">
+                  + <span data-i18n="btnNewES">新建题目</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6 mt-3 pt-3 border-t border-white/20">
+              <div>
+                <div class="text-2xl font-bold tracking-tight tabular-nums leading-none">
+                  <span id="es-metric-current">0</span>
+                  <span class="text-xs ml-0.5 font-normal text-white/80">/ <span id="es-metric-limit">400</span> 字</span>
+                </div>
+                <div class="h-1.5 w-full bg-white/25 mt-2 rounded-full overflow-hidden">
+                  <div id="es-progress-bar" class="h-full bg-white transition-all duration-200" style="width: 0%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="text-2xl font-bold tracking-tight tabular-nums leading-none">
+                  <span id="es-metric-pct">0%</span>
+                  <span id="es-metric-status" class="text-xs ml-1 font-normal text-white/90">建议填满 90%以上</span>
+                </div>
+                <div class="h-1.5 w-full bg-white/25 mt-2 rounded-full overflow-hidden">
+                  <div class="h-full bg-[#FAF5B2] w-11/12"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-glass-panel p-4 flex flex-col gap-3">
+            <div class="grid grid-cols-12 gap-2">
+              <div class="col-span-12 sm:col-span-5">
+                <label class="block text-[11px] font-bold text-neutral-700 mb-0.5" data-i18n="lblSelectESItem">切换题目</label>
+                <select id="es-select" onchange="selectESApplication(this.value)" class="input-industrial w-full px-2.5 py-1.5 text-xs font-bold"></select>
+              </div>
+              <div class="col-span-6 sm:col-span-4">
+                <label class="block text-[11px] font-bold text-neutral-700 mb-0.5" data-i18n="lblESCompany">目标企业</label>
+                <select id="es-company-id" onchange="saveCurrentES()" class="input-industrial w-full px-2.5 py-1.5 text-xs font-bold"></select>
+              </div>
+              <div class="col-span-3 sm:col-span-1">
+                <label class="block text-[11px] font-bold text-neutral-700 mb-0.5" data-i18n="lblESLimitShort">上限</label>
+                <input id="es-limit" oninput="saveCurrentES()" type="number" step="50" class="input-industrial w-full px-1 py-1.5 text-xs font-mono font-bold tabular-nums text-center" value="400" />
+              </div>
+              <div class="col-span-3 sm:col-span-2">
+                <label class="block text-[11px] font-bold text-neutral-700 mb-0.5" data-i18n="lblESVersion">历史版本</label>
+                <select id="es-version-select" onchange="restoreESVersion(this.value)" class="input-industrial w-full px-1.5 py-1.5 text-xs font-mono font-bold"></select>
+              </div>
+
+              <div class="col-span-12">
+                <label class="block text-[11px] font-bold text-neutral-700 mb-0.5" data-i18n="lblESQuestion">ES 题目</label>
+                <input id="es-question" oninput="saveCurrentES()" type="text" class="input-industrial w-full px-3 py-1.5 text-xs font-bold" />
+              </div>
+            </div>
+
+            <div class="bg-white/70 rounded-xl p-2.5">
+              <span class="block text-[11px] font-extrabold text-neutral-900 mb-1.5" data-i18n="lblSelectStories">
+                勾选本次使用的经历（防 AI 乱编）：
+              </span>
+              <div id="es-story-checkboxes" class="flex flex-wrap gap-2"></div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-extrabold text-neutral-900 mb-1" data-i18n="lblESDraft">
+                ES 草稿（可写中文大纲，AI 自动转日文）
+              </label>
+              <textarea id="es-body" oninput="saveCurrentES()" rows="10" class="input-industrial w-full p-3 text-sm leading-relaxed font-medium resize-y"></textarea>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2.5">
+              <button onclick="runESReview('auto')" class="btn-pill-primary flex-1 flex items-center justify-center">
+                <span data-i18n="btnESReviewAuto">AI 润色与改写</span>
+              </button>
+              <button onclick="runESReview('bridge')" class="btn-neu-pill">
+                <span data-i18n="btnESReviewBridge">复制提示词</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-span-12 lg:col-span-6 card-glass-panel p-4 flex flex-col gap-3">
+          <div class="flex items-center justify-between border-b border-black/5 pb-2.5">
+            <div>
+              <span class="typo-tech-label" data-i18n="esReviewLabel">修改建议</span>
+              <h2 class="text-sm font-extrabold text-neutral-900 mt-0.5" data-i18n="esReviewTitle">改写方案 · 事实核对 · 面试追问</h2>
+            </div>
+            <button onclick="runDemoSimulation('es')" class="btn-neu-pill py-1 px-3 text-xs" data-i18n="btnSimulateES">
+              预览效果
+            </button>
+          </div>
+
+          <div id="es-skeleton" class="hidden flex-col gap-3 py-2">
+            <div class="flex items-center gap-2 text-xs font-bold text-[#FE5E0E]">
+              <span class="inline-block w-2 h-2 rounded-full bg-[#FE5E0E] animate-ping"></span>
+              <span data-i18n="skeletonReviewing">正在核对经历事实、统计字数并生成日语改写方案...</span>
+            </div>
+            <div class="skeleton-shimmer h-36 w-full"></div>
+            <div class="skeleton-shimmer h-24 w-full"></div>
+            <div class="skeleton-shimmer h-24 w-full"></div>
+          </div>
+
+          <div id="es-review-result" class="flex flex-col gap-3 max-h-[calc(100vh-190px)] overflow-y-auto pr-1"></div>
+        </div>
+
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ============================================================
+       【路标 5】视觉重心 2：底部悬浮暗色胶囊控制栏（严格保留）
+       ============================================================ -->
+  <div class="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 toolbar-pill-dark text-xs">
+    <button onclick="switchTab('companies')" class="hover:text-[#FE5E0E] transition font-semibold px-2 py-0.5">
+      <span data-i18n="pillMeasure">背调</span>
+    </button>
+    <div class="w-px h-3 bg-white/15"></div>
+    <button onclick="switchTab('stories')" class="hover:text-[#FE5E0E] transition font-semibold px-2 py-0.5">
+      <span data-i18n="pillLocate">经历</span>
+    </button>
+    <div class="w-px h-3 bg-white/15"></div>
+    <button onclick="switchTab('es')" class="hover:text-[#FE5E0E] transition font-semibold px-2 py-0.5">
+      <span data-i18n="pillES">写ES</span>
+    </button>
+    <div class="w-px h-3 bg-white/15"></div>
+    <button onclick="exportAllDataJSON()" class="hover:text-[#FAF5B2] transition font-semibold px-2 py-0.5">
+      <span data-i18n="pillBackup">备份</span>
+    </button>
+  </div>
+
+  <!-- ============================================================
+       【路标 6】新手互动引导组件
+       ============================================================ -->
+  <div id="tour-spotlight-ring" class="hidden"></div>
+  <div id="tour-floating-card" class="fixed z-[9999] hidden w-[350px] max-w-[calc(100vw-24px)] bg-[#222326] text-white rounded-2xl p-4 shadow-2xl border border-white/15 pointer-events-auto">
+    <div class="flex items-center justify-between mb-2">
+      <span id="tour-step-badge" class="px-2.5 py-0.5 rounded-full bg-[#FE5E0E] text-white font-mono text-[11px] font-bold">第 1 / 4 步</span>
+      <button type="button" onclick="endInteractiveTour()" class="px-2.5 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-white/90 text-xs font-bold transition" data-i18n="tourSkip">
+        关闭教程
+      </button>
+    </div>
+    <h4 id="tour-title" class="text-sm font-bold text-white mb-1.5"></h4>
+    <p id="tour-desc" class="text-xs text-white/80 leading-relaxed mb-3"></p>
+    <div id="tour-action-slot" class="mb-3"></div>
+    <div class="flex items-center justify-between border-t border-white/15 pt-2.5">
+      <button type="button" onclick="prevTourStep()" id="tour-prev-btn" class="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition">
+        上一步
+      </button>
+      <span class="text-[10px] text-white/45">支持键盘方向键</span>
+      <button type="button" onclick="nextTourStep()" id="tour-next-btn" class="px-4 py-1.5 rounded-full bg-[#FE5E0E] hover:bg-[#e04f06] text-white text-xs font-bold shadow-md transition">
+        下一步
+      </button>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       【路标 7】弹窗 1：系统设置与数据备份
+       ============================================================ -->
+  <div id="settingsModal" class="fixed inset-0 z-[9000] hidden items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div class="card-glass-panel bg-white/95 max-w-lg w-full p-5 flex flex-col gap-4">
+      <div class="flex items-center justify-between border-b border-black/5 pb-2.5">
+        <div>
+          <span class="typo-tech-label" data-i18n="modalSettingsLabel">系统设置</span>
+          <h3 class="text-base font-extrabold text-neutral-900" data-i18n="modalSettingsTitle">AI 连接方式与数据备份</h3>
+        </div>
+        <button onclick="closeModal('settingsModal')" class="btn-circle-icon">×</button>
+      </div>
+
+      <div class="p-3.5 rounded-xl bg-[#FAF5B2]/80 text-xs text-neutral-900 space-y-1">
+        <div class="font-bold" data-i18n="dualModeExplainTitle">两种 AI 使用方式说明</div>
+        <p class="leading-relaxed" data-i18n="dualModeExplainBody">
+          1. <strong>接口直连：</strong>填入免费的 Gemini API Key，点击按钮即可直接在页面内生成分析结果。<br>
+          2. <strong>网页桥接：</strong>无需填 Key。点击「复制提示词」贴给网页版 ChatGPT / Claude，再把回复的 JSON 贴回即可。
+        </p>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-neutral-800 mb-1">Gemini API Key（仅保存在本机浏览器）</label>
+          <input id="settings-api-key" type="password" class="input-industrial w-full px-3 py-2 text-xs font-mono" placeholder="AIzaSy..." />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-neutral-800 mb-1">AI 模型选择</label>
+          <select id="settings-model" class="input-industrial w-full px-3 py-2 text-xs font-bold font-mono">
+            <option value="gemini-2.5-flash">gemini-2.5-flash（推荐：速度快）</option>
+            <option value="gemini-2.5-pro">gemini-2.5-pro（深度分析）</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="border-t border-black/5 pt-3">
+        <label class="block text-xs font-bold text-neutral-800 mb-2" data-i18n="lblBackupSection">数据备份与恢复 (JSON)</label>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="exportAllDataJSON()" class="btn-neu-pill">
+            <span data-i18n="btnExportJSON">导出备份文件</span>
+          </button>
+          <label class="btn-neu-pill cursor-pointer">
+            <span data-i18n="btnImportJSON">导入备份文件</span>
+            <input type="file" accept=".json" onchange="importDataJSON(event)" class="hidden" />
+          </label>
+          <button onclick="resetToCleanWorkspace()" class="btn-neu-pill text-rose-600 ml-auto">
+            <span data-i18n="btnResetData">清空重置</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t border-black/5">
+        <button onclick="saveSettingsFromModal()" class="btn-pill-primary">
+          <span data-i18n="btnSaveSettings">保存设置</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       【路标 8】弹窗 2：网页 AI 协同工具
+       ============================================================ -->
+  <div id="bridgeModal" class="fixed inset-0 z-[9000] hidden items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div class="card-glass-panel bg-white/95 max-w-2xl w-full p-5 flex flex-col gap-3">
+      <div class="flex items-center justify-between border-b border-black/5 pb-2">
+        <div>
+          <span class="typo-tech-label" data-i18n="bridgeLabel">网页协同</span>
+          <h3 class="text-base font-extrabold text-neutral-900" data-i18n="bridgeTitle">网页 AI 协同工具（支持 ChatGPT / Claude / Gemini 网页版）</h3>
+        </div>
+        <button onclick="closeModal('bridgeModal')" class="btn-circle-icon">×</button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="flex flex-col gap-1.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-neutral-900">1. 复制自动生成的提示词</span>
+            <button onclick="copyBridgePrompt()" class="btn-neu-pill py-1 px-3 text-[11px]">复制提示词</button>
+          </div>
+          <textarea id="bridge-prompt-out" readonly rows="10" class="input-industrial w-full p-2.5 text-[11px] font-mono leading-relaxed"></textarea>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-neutral-900">2. 粘贴 AI 回复的 JSON 结果</span>
+            <button onclick="applyBridgeJSON()" class="btn-pill-primary py-1 px-3 text-[11px]">生成卡片</button>
+          </div>
+          <textarea id="bridge-json-in" rows="10" class="input-industrial w-full p-2.5 text-[11px] font-mono leading-relaxed" placeholder="将网页版 AI 回复的 JSON 内容粘贴到这里..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 轻提示 (Toast) -->
+  <div id="toast" class="fixed bottom-16 right-4 z-[9999] hidden px-4 py-2.5 rounded-full bg-[#222326] text-white text-xs font-bold shadow-2xl border border-white/15 items-center gap-2">
+    <span class="w-2 h-2 rounded-full bg-[#FE5E0E]"></span>
+    <span id="toast-text"></span>
+  </div>
+
+  <script src="script.js"></script>
+</body>
